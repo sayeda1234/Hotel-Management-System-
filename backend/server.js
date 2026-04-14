@@ -10,6 +10,9 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const roomRoutes = require('./routes/roomRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
+const userRoutes = require("./routes/userRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const staffRoutes = require("./routes/staffRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +23,9 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/staff', staffRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.post('/api/contact', (req, res) => {

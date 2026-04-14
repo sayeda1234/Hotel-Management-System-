@@ -1,78 +1,138 @@
 const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
-const verifyToken = require("../middleware/verifyToken");
+const {verifyToken} = require('../middleware/authmiddleware');
+const isAdmin = require('../middleware/adminMiddleware');
+
 
 // ===============================
-// ✅ Create New Booking
+// ✅ Create Booking
 // ===============================
-router.post('/',verifyToken, async (req, res) => {
+router.post('/', verifyToken, async (req, res) => {
   try {
-    const { name, phone, roomName, checkInDate, checkOutDate } = req.body;
+    const { roomName, checkInDate, checkOutDate, name,phone} = req.body;
 
-    // 🔹 Check if room is already booked for selected dates
-    const existingBooking = await Booking.findOne({
+    // ✅ Proper validation
+    if (!roomName || !name || !phone || !checkInDate || !checkOutDate ) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // ✅ Prevent double booking
+    const existing = await Booking.findOne({
       roomName,
-      $or: [
-        {
-          checkInDate: { $lte: checkOutDate },
-          checkOutDate: { $gte: checkInDate }
-        }
-      ]
+      checkIn: { $lte: new Date(checkOutDate) },
+      checkOut: { $gte: new Date(checkInDate) }
     });
 
-    if (existingBooking) {
+    if (existing) {
       return res.status(400).json({
         message: "Room already booked for selected dates"
       });
     }
 
-    const newBooking = new Booking({
-      name,
-      phone,
-      roomName,
+    // ✅ Save booking
+    const booking = new Booking({
+      user: req.user.id,
+      roomName,   // ✅ FIXED
       checkInDate,
       checkOutDate,
+      name,
+      phone,
+      bookingId: "BK" + Date.now()
     });
 
-    await newBooking.save();
+    await booking.save();
 
-    res.status(201).json({ message: 'Booking successful!' });
+    res.status(201).json({ message: "Booking confirmed", booking });
 
-  } catch (error) {
-    console.error("Booking error:", error.message);
-    res.status(500).json({ message: 'Server error while booking.' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Booking failed" });
   }
 });
 
 
 // ===============================
-// ✅ Get Booked Dates for Calendar
+// ✅ My Bookings
 // ===============================
-router.get('/:roomName', async (req, res) => {
+router.get('/my', verifyToken, async (req, res) => {
   try {
-    const bookings = await Booking.find({
-      roomName: req.params.roomName
-    });
+    const bookings = await Booking.find({ user: req.user.id })
+      .sort({ createdAt: -1 });
+
+    res.json(bookings);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching bookings" });
+  }
+});
+
+
+// ===============================
+// ✅ Booked Dates
+// ===============================
+router.get('/dates/:roomName', async (req, res) => {
+  try {
+    const bookings = await Booking.find({ roomName: req.params.roomName });
 
     let bookedDates = [];
 
-    bookings.forEach(booking => {
-      let start = new Date(booking.checkInDate);
-      let end = new Date(booking.checkOutDate);
+    bookings.forEach(b => {
+      let start = new Date(b.checkIn);
+      let end = new Date(b.checkOut);
 
       for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        bookedDates.push(
-          new Date(d).toISOString().split("T")[0]
-        );
+        bookedDates.push(new Date(d).toISOString().split("T")[0]);
       }
     });
 
     res.json(bookedDates);
 
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching dates" });
+  }
+});
+
+
+// ===============================
+// ❌ Cancel Booking
+// ===============================
+router.delete('/:id', verifyToken, async (req, res) => {
+  try {
+    const booking = await Booking.findOneAndDelete({
+      _id: req.params.id,
+      user: req.user.id
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    res.json({ message: "Booking cancelled successfully" });
+
   } catch (error) {
-    console.error("Fetch error:", error.message);
-    res.status(500).json({ message: "Error fetching booked dates" });
+    console.error("Cancel error:", error);
+    res.status(500).json({ message: "Failed to cancel booking" });
+  }
+});
+router.get('/admin/all', verifyToken, isAdmin, async (req, res) => {
+  try {
+    const bookings=await Booking.find().set({createdAt:-1});
+    res.json(bookings);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Error fetching all bookings" });
+  }
+});
+
+router.delete('/admin/:id', verifyToken, isAdmin, async (req, res) => {
+  try {
+    await Booking.findByIdAndDelete(req.params.id);
+    res.json({ message: "Booking deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting booking" });
   }
 });
 

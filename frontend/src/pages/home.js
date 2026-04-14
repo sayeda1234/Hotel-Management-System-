@@ -41,11 +41,6 @@ const Home = () => {
           We are located in the heart of the city, providing a peaceful oasis for travelers and guests.
         </p>
       </section>
-
-      {/* Footer */}
-      <footer>
-        <p>&copy; 2024 BlissStay Hotel. All rights reserved.</p>
-      </footer>
     </div>
   );
 };

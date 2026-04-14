@@ -1,17 +1,25 @@
-const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
+const mongoose = require("mongoose");
+
+mongoose.models = {}; // 🔥 ADD THIS
 
 const bookingSchema = new mongoose.Schema({
-  bookingId: {
-    type: String,
-    default: uuidv4,
-    unique: true
-  },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   name: String,
   phone: String,
+  roomName: String,
   checkInDate: Date,
-  checkOutDate: Date
-});
+  checkOutDate: Date,
 
-module.exports = mongoose.model('Booking', bookingSchema);
+  status: {
+    type: String,
+    default: "pending"
+  },
 
+  assignedStaff: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
+
+}, { timestamps: true });
+
+module.exports = mongoose.model("Booking", bookingSchema); 

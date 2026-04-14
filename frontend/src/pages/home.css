@@ -14,7 +14,15 @@
   background: url('https://wallpapers.com/images/hd/hotel-pictures-o9d1lk0gt8hdf0ws.jpg') no-repeat center center/cover;
   color: white;
   text-align: center;
-  padding: 200px 40px;
+
+  height: 90vh;              /* ✅ control height properly */
+  display: flex;             /* ✅ center content */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  padding: 0 20px;           /* ❌ remove huge padding */
+  position: relative;
 }
 
 .hero h1 {

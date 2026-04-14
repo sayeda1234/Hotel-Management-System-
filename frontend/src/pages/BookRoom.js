@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './BookRoom.css';
-import axios from 'axios'; 
+import axios from 'axios';
 
 const BookRoom = () => {
   const location = useLocation();
@@ -14,47 +14,67 @@ const BookRoom = () => {
   const [checkOutDate, setCheckOutDate] = useState('');
 
   if (!room) {
-    return <div className="error">Room details not found.</div>;
+    return (
+      <div style={{ padding: "60px" }}>
+        <h2>No room selected</h2>
+        <button onClick={() => navigate("/rooms")}>
+          Go Back to Rooms
+        </button>
+      </div>
+    );
   }
 
+  const handleBooking = async (e) => {
+    e.preventDefault();
 
+    const token = localStorage.getItem("token");
 
-const handleBooking = async (e) => {
-  e.preventDefault();
+    if (!token) {
+      alert("Please login first");
+      navigate("/login");
+      return;
+    }
+
+    if (!checkInDate || !checkOutDate) {
+      alert("Select dates");
+      return;
+    }
 
   const bookingData = {
-    name,
-    phone,
-    roomName: room.name,
-    checkInDate,
-    checkOutDate,
-  };
-
-  try {
-    const response = await axios.post('http://localhost:5000/api/bookings', bookingData);
-    console.log("Booking response:", response.data);
-    alert(`Thank you ${name}, your booking is confirmed!`);
-    navigate('/rooms');
-  } catch (error) {
-    console.error("Booking failed:", error.response?.data || error.message);
-    alert("An error occurred. Please try again.");
-  }
+  name: name,
+  phone: phone,
+  roomName: room.name,
+  checkInDate: checkInDate,
+  checkOutDate: checkOutDate
 };
 
+    console.log("Sending:", bookingData);
 
+    try {
+      await axios.post(
+        "http://localhost:5000/api/bookings",
+        bookingData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      alert("Booking Confirmed ✅");
+      navigate("/my-bookings");
+
+    } catch (error) {
+      console.error(error.response?.data || error.message);
+      alert(error.response?.data?.message || "Booking failed");
+    }
+  };
 
   return (
     <div className="booking-page">
       <div className="booking-container">
         <h2>Booking for {room.name}</h2>
-        <div className="room-details">
-          <img src={room.image} alt={room.name} />
-          <div className="room-info">
-            <p>{room.description}</p>
-            <p><strong>Price:</strong> ${room.price} / night</p>
-            <p><strong>Amenities:</strong> {room.amenities?.join(', ') || 'N/A'}</p>
-          </div>
-        </div>
 
         <form onSubmit={handleBooking} className="booking-form">
           <label>Your Name:</label>
@@ -70,8 +90,6 @@ const handleBooking = async (e) => {
             type="tel" 
             value={phone} 
             onChange={(e) => setPhone(e.target.value)} 
-            pattern="[0-9]{10}" 
-            placeholder="Enter 10-digit number"
             required 
           />
 

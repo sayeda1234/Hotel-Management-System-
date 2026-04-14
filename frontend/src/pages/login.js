@@ -27,7 +27,14 @@ const Login = () => {
       );
 
       localStorage.setItem("token", res.data.token);
-      navigate("/home");
+      localStorage.setItem("role", res.data.role);
+      if(res.data.role === "admin") {
+        navigate("/admin");
+      } else if(res.data.role === "staff") {
+        navigate("/staff");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
       setError("Invalid email or password");
     }

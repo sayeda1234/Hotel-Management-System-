@@ -1,17 +1,40 @@
 const jwt = require("jsonwebtoken");
 
+// 🔐 VERIFY TOKEN
 const verifyToken = (req, res, next) => {
-  const bearer = req.headers.authorization;
-  if (!bearer) return res.status(401).json({ message: "No token" });
+  const token = req.headers.authorization?.split(" ")[1];
 
-  const token = bearer.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch {
+  } catch (err) {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
 
-module.exports = verifyToken;
+// 👷 STAFF CHECK
+const isStaff = (req, res, next) => {
+  if (req.user.role !== "staff") {
+    return res.status(403).json({ message: "Staff only" });
+  }
+  next();
+};
+
+// 👑 ADMIN CHECK
+const isAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    return res.status(403).json({ message: "Admin only" });
+  }
+  next();
+};
+
+module.exports = {
+  verifyToken,
+  isStaff,
+  isAdmin
+};
