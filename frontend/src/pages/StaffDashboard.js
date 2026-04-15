@@ -4,8 +4,6 @@ import "./Staff.css";
 
 const StaffDashboard = () => {
   const [bookings, setBookings] = useState([]);
-
-  const staffId = localStorage.getItem("userId");
 useEffect(() => {
   const fetchData = async () => {
     try {
