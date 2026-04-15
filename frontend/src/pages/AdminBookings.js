@@ -11,7 +11,7 @@ const AdminBookings = () => {
   useEffect(() => {
   const fetchBookings = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/bookings");
+      const res = await axios.get("https://hotel-management-system-e9sm.onrender.com/api/admin/bookings");
       setBookings(res.data);
     } catch (err) {
       console.error(err);
@@ -20,7 +20,7 @@ const AdminBookings = () => {
 
   const fetchStaff = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/admin/staff");
+      const res = await axios.get("https://hotel-management-system-e9sm.onrender.com/api/admin/staff");
       setStaffList(res.data);
     } catch (err) {
       console.error(err);
@@ -38,7 +38,7 @@ const AdminBookings = () => {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/admin/bookings/${id}`,
+        `https://hotel-management-system-e9sm.onrender.com/api/admin/bookings/${id}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -58,7 +58,7 @@ const AdminBookings = () => {
 
     try {
       await axios.put(
-        `http://localhost:5000/api/admin/assign-staff/${bookingId}`,
+        `https://hotel-management-system-e9sm.onrender.com/api/admin/assign-staff/${bookingId}`,
         { staffId },
         {
           headers: { Authorization: `Bearer ${token}` }

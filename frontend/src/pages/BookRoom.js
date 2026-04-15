@@ -52,7 +52,7 @@ const BookRoom = () => {
 
     try {
       await axios.post(
-        "http://localhost:5000/api/bookings",
+        "https://hotel-management-system-e9sm.onrender.com/api/bookings",
         bookingData,
         {
           headers: {

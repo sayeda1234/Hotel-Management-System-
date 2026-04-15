@@ -19,7 +19,7 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post("http://localhost:5000/api/users/register", formData);
+      await axios.post("https://hotel-management-system-e9sm.onrender.com/api/users/register", formData);
       navigate("/login");
     } catch (err) {
       alert("Registration failed");
